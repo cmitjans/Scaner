@@ -68,6 +68,8 @@ def leer(medio, url):
             continue
         t = e.get("published_parsed") or e.get("updated_parsed")
         fecha = int(calendar.timegm(t)) if t else int(time.time())
+        if fecha < time.time() - 7 * 86400:
+            continue  # algunos RSS incluyen notas antiguas; solo interesan las recientes
         salida.append({"medio": medio, "titulo": titulo, "resumen": resumen,
                        "fecha": fecha, "enlace": e.get("link", "")})
     return salida
