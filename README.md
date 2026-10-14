@@ -17,3 +17,15 @@ Para cada página: dominio, idioma, tipo de sitio (tienda, blog, foro, noticias�
 ## Cómo generar una muestra nueva
 
 Pestaña **Actions → Radiografía de la web → Run workflow**. El resultado queda en `datos/datos.json`.
+
+---
+
+# Noticias: misma noticia, distintos titulares
+
+En `noticias/` hay un segundo experimento: recolecta titulares de 16 medios en español (Chile, España, Argentina, EE. UU., Reino Unido, Alemania, Francia, Rusia, China y Venezuela) cada 3 horas y compara cómo cubren los hechos.
+
+- **Fuente:** los RSS de cada medio, o el RSS de Google News filtrado por sitio cuando el medio no tiene uno propio (solo titulares). Solo se guarda título, un resumen corto, fecha y enlace.
+- **Qué mide** (`noticias/analizar.py`, con listas de palabras definidas de antemano): qué países aparecen más en cada medio, el tono de los titulares sobre cada país, la elección de palabras con carga ("régimen" o "gobierno", "ataque" u "operación") y titulares de distintos medios sobre el mismo hecho.
+- **Limitaciones:** se basa solo en palabras de los titulares, no en leer los artículos; los medios leídos por Google News aportan menos texto; la Voz de América casi no aparece en Google News.
+
+Para actualizar a mano: **Actions → Comparar titulares → Run workflow**.
