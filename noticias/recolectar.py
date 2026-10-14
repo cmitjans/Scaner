@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Recolecta titulares de 28 medios en español de América, Europa, Medio Oriente y Asia a través de sus RSS.
+Recolecta titulares de medios en seis idiomas (español, inglés, francés, ruso, chino y árabe) a través de sus RSS.
 
 Los RSS son listados que los medios publican para que otros programas los lean, así que no hace falta
 entrar a sus sitios. Para los medios sin RSS propio se usa el RSS de Google News filtrado por sitio
-(trae solo titulares). No se guardan artículos completos: solo título, un resumen corto, fecha y enlace.
+(trae solo titulares). Los titulares en otros idiomas se traducen después con traducir.py. No se guardan artículos completos: solo título, un resumen corto, fecha y enlace.
 
 Uso: python3 recolectar.py   → agrega las noticias nuevas a datos/noticias.jsonl
 """
@@ -23,12 +23,18 @@ ARCHIVO = os.path.join(AQUI, "datos", "noticias.jsonl")
 AGENTE = "Mozilla/5.0 (compatible; comparador-de-titulares/1.0; github.com/cmitjans/Scaner)"
 
 
-def google(sitio):
-    return f"https://news.google.com/rss/search?q=site:{sitio}+when:2d&hl=es-419&gl=CL&ceid=CL:es-419"
+# Edición de Google News que corresponde a cada idioma
+EDICION = {"es": "hl=es-419&gl=CL&ceid=CL:es-419", "en": "hl=en-US&gl=US&ceid=US:en", "fr": "hl=fr&gl=FR&ceid=FR:fr",
+           "ru": "hl=ru&gl=RU&ceid=RU:ru", "zh": "hl=zh-CN&gl=CN&ceid=CN:zh-Hans", "zht": "hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+           "ar": "hl=ar&gl=EG&ceid=EG:ar"}
+
+
+def google(sitio, idioma="es"):
+    return f"https://news.google.com/rss/search?q=site:{sitio}+when:2d&{EDICION[idioma]}"
 
 
 # medio, país de origen, tipo, url del RSS (o lista de urls: se usa la primera que funcione)
-MEDIOS = [
+ESPANOL = [
     ("La Tercera", "Chile", "Privado", "https://www.latercera.com/arc/outboundfeeds/rss/?outputType=xml"),
     ("El Mostrador", "Chile", "Privado", google("elmostrador.cl")),
     ("BioBioChile", "Chile", "Privado", google("biobiochile.cl")),
@@ -58,6 +64,66 @@ MEDIOS = [
     ("Yonhap", "Corea del Sur", "Agencia", google("sp.yna.co.kr")),
     ("KBS World", "Corea del Sur", "Público", google("world.kbs.co.kr")),
 ]
+
+# Medios en otros idiomas: medio, país, tipo, idioma, url(s). Se eligieron por ser influyentes en su idioma,
+# no por tener también edición en español. "familia" agrupa ediciones del mismo medio en distintos idiomas.
+OTROS = [
+    # Inglés
+    ("BBC News", "Reino Unido", "Público", "en", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    ("The Guardian", "Reino Unido", "Privado", "en", "https://www.theguardian.com/world/rss"),
+    ("Fox News", "EE. UU.", "Privado", "en", ["https://moxie.foxnews.com/google-publisher/world.xml", google("foxnews.com", "en")]),
+    ("The New York Times", "EE. UU.", "Privado", "en", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"),
+    ("AP", "EE. UU.", "Agencia", "en", google("apnews.com", "en")),
+    ("Al Jazeera English", "Catar", "Estatal", "en", "https://www.aljazeera.com/xml/rss/all.xml"),
+    ("RT", "Rusia", "Estatal", "en", ["https://www.rt.com/rss/news/", google("rt.com", "en")]),
+    ("TASS English", "Rusia", "Estatal", "en", ["https://tass.com/rss/v2.xml", google("tass.com", "en")]),
+    ("CGTN English", "China", "Estatal", "en", google("news.cgtn.com", "en")),
+    ("Global Times", "China", "Estatal", "en", ["https://www.globaltimes.cn/rss/outbrain.xml", google("globaltimes.cn", "en")]),
+    ("Times of India", "India", "Privado", "en", "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"),
+    ("Dawn", "Pakistán", "Privado", "en", ["https://www.dawn.com/feeds/world", google("dawn.com", "en")]),
+    # Francés
+    ("Le Monde", "Francia", "Privado", "fr", "https://www.lemonde.fr/international/rss_full.xml"),
+    ("Le Figaro", "Francia", "Privado", "fr", "https://www.lefigaro.fr/rss/figaro_international.xml"),
+    ("France 24 (francés)", "Francia", "Público", "fr", "https://www.france24.com/fr/rss"),
+    ("RFI", "Francia", "Público", "fr", ["https://www.rfi.fr/fr/rss", google("rfi.fr/fr", "fr")]),
+    ("Jeune Afrique", "Francia", "Privado", "fr", ["https://www.jeuneafrique.com/feed/", google("jeuneafrique.com", "fr")]),
+    # Ruso
+    ("TASS", "Rusia", "Estatal", "ru", ["https://tass.ru/rss/v2.xml", google("tass.ru", "ru")]),
+    ("RIA Novosti", "Rusia", "Estatal", "ru", ["https://ria.ru/export/rss2/archive/index.xml", google("ria.ru", "ru")]),
+    ("Meduza", "Letonia (exilio ruso)", "Independiente", "ru", ["https://meduza.io/rss/all", google("meduza.io", "ru")]),
+    ("Novaya Gazeta Europe", "Letonia (exilio ruso)", "Independiente", "ru", ["https://novayagazeta.eu/feed/rss", google("novayagazeta.eu", "ru")]),
+    ("BBC Russian", "Reino Unido", "Público", "ru", "https://feeds.bbci.co.uk/russian/rss.xml"),
+    # Chino
+    ("Xinhua (chino)", "China", "Estatal", "zh", [google("xinhuanet.com", "zh"), google("news.cn", "zh")]),
+    ("Diario del Pueblo (chino)", "China", "Estatal", "zh", google("people.com.cn", "zh")),
+    ("Huanqiu", "China", "Estatal", "zh", google("huanqiu.com", "zh")),
+    ("Lianhe Zaobao", "Singapur", "Privado", "zh", [google("zaobao.com.sg", "zh"), google("zaobao.com", "zh")]),
+    ("CNA Taiwán", "Taiwán", "Agencia", "zh", ["https://feeds.feedburner.com/rsscna/intworld", google("cna.com.tw", "zht")]),
+    ("BBC Chinese", "Reino Unido", "Público", "zh", "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml"),
+    # Árabe
+    ("Al Jazeera (árabe)", "Catar", "Estatal", "ar", ["https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9", google("aljazeera.net", "ar")]),
+    ("Al Arabiya", "Arabia Saudita", "Privado", "ar", ["https://www.alarabiya.net/feed/rss2/ar.xml", google("alarabiya.net", "ar")]),
+    ("Asharq Al-Awsat", "Arabia Saudita", "Privado", "ar", google("aawsat.com", "ar")),
+    ("Sky News Arabia", "Emiratos Árabes", "Privado", "ar", google("skynewsarabia.com", "ar")),
+    ("Al Mayadeen (árabe)", "Líbano", "Privado", "ar", google("almayadeen.net", "ar")),
+    ("RT Arabic", "Rusia", "Estatal", "ar", google("arabic.rt.com", "ar")),
+    ("BBC Arabic", "Reino Unido", "Público", "ar", "https://feeds.bbci.co.uk/arabic/rss.xml"),
+]
+MEDIOS = [(m, p, t, "es", u) for m, p, t, u in ESPANOL] + OTROS
+
+# Ediciones del mismo medio en distintos idiomas
+FAMILIAS = {
+    "BBC": ["BBC Mundo", "BBC News", "BBC Russian", "BBC Chinese", "BBC Arabic"],
+    "RT": ["RT en español", "RT", "RT Arabic"],
+    "Al Jazeera": ["Al Jazeera English", "Al Jazeera (árabe)"],
+    "France 24": ["France 24", "France 24 (francés)"],
+    "CGTN": ["CGTN", "CGTN English"],
+    "Xinhua": ["Xinhua", "Xinhua (chino)"],
+    "Diario del Pueblo": ["Pueblo en Línea", "Diario del Pueblo (chino)"],
+    "TASS": ["TASS English", "TASS"],
+    "Al Mayadeen": ["Al Mayadeen", "Al Mayadeen (árabe)"],
+}
+FAMILIA_DE = {m: f for f, ms in FAMILIAS.items() for m in ms}
 
 
 def limpiar(texto):
@@ -97,7 +163,7 @@ def main():
                 vistos.add((n["medio"], n["titulo"].lower()))
     nuevas = 0
     with open(ARCHIVO, "a", encoding="utf-8") as f:
-        for medio, pais, tipo, urls in MEDIOS:
+        for medio, pais, tipo, idioma, urls in MEDIOS:
             items = None
             for url in (urls if isinstance(urls, list) else [urls]):
                 try:
@@ -113,7 +179,9 @@ def main():
                 if clave in vistos:
                     continue
                 vistos.add(clave)
-                it.update({"pais": pais, "tipo": tipo})
+                it.update({"pais": pais, "tipo": tipo, "idioma": idioma})
+                if medio in FAMILIA_DE:
+                    it["familia"] = FAMILIA_DE[medio]
                 f.write(json.dumps(it, ensure_ascii=False) + "\n")
                 n += 1
             nuevas += n

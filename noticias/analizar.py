@@ -8,6 +8,11 @@ Mide cuatro cosas, con reglas definidas de antemano (ver las listas más abajo):
 3. Elección de palabras: pares como "régimen" / "gobierno" o "ataque" / "operación".
 4. Misma noticia, distintos titulares: agrupa titulares sobre el mismo hecho para compararlos.
 
+Los titulares en inglés, francés, ruso, chino y árabe se analizan a partir de su traducción automática
+al español (traducir.py), así que esas mediciones son todavía más aproximadas; la agenda (qué países se
+nombran) es la más confiable, porque los nombres de países se traducen bien.
+Además de por medio, todo se resume por idioma y por "familia" (un mismo medio en varios idiomas).
+
 Todo es aproximado: se basa en palabras de los titulares, no en leer los artículos.
 Uso: python3 analizar.py   → escribe datos/analisis.json
 """
@@ -17,6 +22,8 @@ import os
 import re
 import unicodedata
 from collections import Counter, defaultdict
+
+from recolectar import FAMILIA_DE
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 ENTRADA = os.path.join(AQUI, "datos", "noticias.jsonl")
@@ -136,9 +143,18 @@ def main():
     noticias = []
     with open(ENTRADA, encoding="utf-8") as f:
         for linea in f:
-            noticias.append(json.loads(linea))
+            n = json.loads(linea)
+            n.setdefault("idioma", "es")
+            if n["idioma"] != "es":
+                if "titulo_es" not in n:
+                    continue  # todavía sin traducir
+                n["original"], n["titulo"] = n["titulo"], n["titulo_es"]
+                n["resumen"] = ""  # los resúmenes no se traducen
+            noticias.append(n)
     medios = sorted({n["medio"] for n in noticias})
-    info = {n["medio"]: {"pais": n["pais"], "tipo": n["tipo"]} for n in noticias}
+    info = {n["medio"]: {"pais": n["pais"], "tipo": n["tipo"], "idioma": n["idioma"],
+                         **({"familia": FAMILIA_DE[n["medio"]]} if n["medio"] in FAMILIA_DE else {})}
+            for n in noticias}
     por_medio = Counter(n["medio"] for n in noticias)
 
     indice = []                              # cada titular con lo que se detectó en él (para la página)
@@ -164,12 +180,27 @@ def main():
             if rb.search(tt):
                 uso_pares[a][n["medio"]]["b"] += 1
                 terminos.append(a + "|b")
-        indice.append({"m": n["medio"], "t": n["titulo"], "e": n["enlace"], "f": n["fecha"],
-                       "p": paises_n, "s": sc, "w": terminos})
+        x = {"m": n["medio"], "t": n["titulo"], "e": n["enlace"], "f": n["fecha"],
+             "p": paises_n, "s": sc, "w": terminos}
+        if "original" in n:
+            x["o"] = n["original"]
+        indice.append(x)
 
     agenda_out = {m: {p: round(100 * agenda[m][p] / por_medio[m], 1) for p in PAISES} for m in medios}
     tono_out = {m: {p: {"media": round(sum(v) / len(v), 2), "n": len(v)}
                     for p, v in tono_suma[m].items() if len(v) >= 3} for m in medios}
+    # Por idioma: promedio de los medios de ese idioma (cada medio pesa lo mismo, tenga 20 o 100 titulares)
+    idiomas = sorted({info[m]["idioma"] for m in medios})
+    agenda_idioma, tono_idioma = {}, {}
+    for l in idiomas:
+        ms = [m for m in medios if info[m]["idioma"] == l]
+        agenda_idioma[l] = {p: round(sum(agenda_out[m][p] for m in ms) / len(ms), 1) for p in PAISES}
+        tono_idioma[l] = {}
+        for p in PAISES:
+            v = [x for m in ms for x in tono_suma[m].get(p, [])]
+            if len(v) >= 5:
+                tono_idioma[l][p] = {"media": round(sum(v) / len(v), 2), "n": len(v)}
+
     pares_out = [{"a": a, "b": b, "medios": {m: dict(uso_pares[a][m]) for m in medios if uso_pares[a][m]}}
                  for a, _, b, _ in PARES]
 
@@ -181,15 +212,20 @@ def main():
             n = noticias[i]
             por.setdefault(n["medio"], n)
         if len(por) >= 3:
+            idiomas_g = {info[m]["idioma"] for m in por}
             palabras_clave = [w for w, _ in sorted(g["centro"].items(), key=lambda x: -x[1])[:5]]
             historias.append({
                 "medios": len(por),
+                "idiomas": len(idiomas_g),
                 "fecha": g["fecha"],
                 "clave": palabras_clave,
                 "titulares": [{"medio": m, "titulo": n["titulo"], "enlace": n["enlace"],
-                               "tono": tono(norm(n["titulo"]))[0]} for m, n in sorted(por.items())],
+                               "tono": tono(norm(n["titulo"]))[0],
+                               **({"original": n["original"]} if "original" in n else {})}
+                              for m, n in sorted(por.items(), key=lambda x: (x[1]["idioma"] != "es", x[1]["idioma"], x[0]))],
             })
-    historias.sort(key=lambda h: (-h["medios"], -h["fecha"]))
+    # Primero las noticias que cruzan más idiomas: son las que permiten comparar
+    historias.sort(key=lambda h: (-min(h["idiomas"], 4), -h["medios"], -h["fecha"]))
 
     fechas = [n["fecha"] for n in noticias]
     resultado = {
@@ -198,9 +234,13 @@ def main():
         "medios": [{"medio": m, **info[m], "titulares": por_medio[m]} for m in medios],
         "paises": list(PAISES),
         "agenda": agenda_out,
+        "idiomas": [{"idioma": l, "medios": sum(info[m]["idioma"] == l for m in medios),
+                     "titulares": sum(por_medio[m] for m in medios if info[m]["idioma"] == l)} for l in idiomas],
+        "agenda_idioma": agenda_idioma,
+        "tono_idioma": tono_idioma,
         "tono": tono_out,
         "pares": pares_out,
-        "historias": historias[:60],
+        "historias": historias[:80],
         "titulares": sorted(indice, key=lambda x: -x["f"]),
     }
     with open(SALIDA, "w", encoding="utf-8") as f:
