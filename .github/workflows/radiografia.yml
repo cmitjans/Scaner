@@ -1,0 +1,42 @@
+# Toma una muestra aleatoria de Common Crawl, la analiza y guarda el resultado en datos/.
+# Se ejecuta a mano desde la pestaña Actions → "Radiografía de la web" → Run workflow.
+name: Radiografía de la web
+
+on:
+  workflow_dispatch:
+    inputs:
+      archivos:
+        description: "Cuántos archivos de Common Crawl leer"
+        default: "8"
+      por_archivo:
+        description: "Páginas por archivo"
+        default: "750"
+  push:
+    branches: [main]
+    paths: [radiografia.py, .github/workflows/radiografia.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  radiografia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install warcio==1.8.1 selectolax==1.0.0 py3langid==0.4.0
+      - name: Analizar muestra
+        run: |
+          mkdir -p datos
+          python radiografia.py --archivos "${{ github.event.inputs.archivos || '8' }}" \
+            --por-archivo "${{ github.event.inputs.por_archivo || '750' }}" --salida datos/datos.json
+      - name: Guardar resultado
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add datos/datos.json
+          git commit -m "Nueva muestra de la web" || echo "Sin cambios"
+          git push
