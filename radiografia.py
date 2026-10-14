@@ -171,9 +171,14 @@ def analizar(url, cuerpo, ctype=""):
 
 
 def tamano(ruta):
-    req = urllib.request.Request(BASE + ruta, method="HEAD", headers={"User-Agent": AGENTE})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return int(r.headers["Content-Length"])
+    for intento in range(4):
+        try:
+            req = urllib.request.Request(BASE + ruta, method="HEAD", headers={"User-Agent": AGENTE})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return int(r.headers["Content-Length"])
+        except Exception:
+            time.sleep(3 * (intento + 1))
+    return 0
 
 
 def registros_en(trozo, maximo):
@@ -199,10 +204,21 @@ def leer_archivo(ruta, maximo, rnd, por_salto=5, bloque=1_000_000):
     """Lee páginas desde puntos al azar del archivo (dentro, las páginas están ordenadas por dominio)."""
     filas = []
     total = tamano(ruta)
+    if not total:
+        return filas
     saltos = max(1, maximo // por_salto)
     for inicio in sorted(rnd.randrange(0, max(1, total - bloque)) for _ in range(saltos)):
-        with descargar(BASE + ruta, f"bytes={inicio}-{inicio + bloque - 1}") as r:
-            trozo = r.read()
+        trozo = None
+        for intento in range(4):  # Common Crawl a veces corta conexiones o pide ir más lento
+            try:
+                with descargar(BASE + ruta, f"bytes={inicio}-{inicio + bloque - 1}") as r:
+                    trozo = r.read()
+                break
+            except Exception as e:
+                print(f"  reintento {intento + 1} ({e.__class__.__name__})", file=sys.stderr)
+                time.sleep(3 * (intento + 1))
+        if trozo is None:
+            continue
         tomadas = 0
         try:
             for reg in registros_en(trozo, por_salto * 6):
