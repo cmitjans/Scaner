@@ -40,12 +40,20 @@ PAISES = {
     "Venezuela": r"\b(venezuela|venezolan\w*|caracas|maduro)\b",
     "Cuba": r"\b(cuba|cuban\w*|la habana)\b",
     "Unión Europea": r"\b(union europea|bruselas|comision europea)\b",
+    "Corea del Norte": r"\b(corea del norte|norcorean\w*|pyongyang|kim jong[ -]?un)\b",
+    "Corea del Sur": r"\b(corea del sur|surcorean\w*|seul)\b",
+    "Japón": r"\b(japon|japones\w*|tokio)\b",
+    "Turquía": r"\b(turquia|turco|turca|turcos|ankara|erdogan)\b",
+    "India": r"\b(india|nueva delhi|modi)\b",
+    "Líbano": r"\b(libano|libanes\w*|beirut|hezbol\w*)\b",
     "Chile": r"\b(chile|chilen\w*|santiago de chile|la moneda)\b",
     "Argentina": r"\b(argentin\w*|buenos aires|milei)\b",
     "Brasil": r"\b(brasil\w*|lula|bolsonaro)\b",
     "México": r"\b(mexico|mexican\w*|sheinbaum)\b",
 }
 PAISES = {k: re.compile(v) for k, v in PAISES.items()}
+# Expresiones que contienen el nombre de un país pero no hablan de él
+FALSOS = re.compile(r"montana rusa|ruleta rusa|ensalad\w* rusa|tortilla espanola|gripe espanola|papa(s)? francesa(s)?|india (yanomami|mapuche)|pueblos? indio\w*")
 
 # --- 2. Tono: listas cortas de palabras claramente negativas o positivas en titulares ---
 NEGATIVAS = set("""ataque ataques ataca atacan amenaza amenazas amenazan crisis condena condenan conflicto guerra muerte
@@ -133,22 +141,31 @@ def main():
     info = {n["medio"]: {"pais": n["pais"], "tipo": n["tipo"]} for n in noticias}
     por_medio = Counter(n["medio"] for n in noticias)
 
+    indice = []                              # cada titular con lo que se detectó en él (para la página)
     agenda = defaultdict(Counter)            # medio → país → titulares
     tono_suma = defaultdict(lambda: defaultdict(list))  # medio → país → [tono]
     uso_pares = defaultdict(lambda: defaultdict(Counter))  # par → medio → {a, b}
     for n in noticias:
         t = norm(n["titulo"] + " " + n["resumen"])
+        t = FALSOS.sub(" ", t)  # "montaña rusa" no es Rusia
         tt = norm(n["titulo"])
         sc, _, _ = tono(t)
+        paises_n = []
         for pais, rx in PAISES.items():
             if rx.search(t):
                 agenda[n["medio"]][pais] += 1
                 tono_suma[n["medio"]][pais].append(sc)
+                paises_n.append(pais)
+        terminos = []
         for a, ra, b, rb in PARES:
             if ra.search(tt):
                 uso_pares[a][n["medio"]]["a"] += 1
+                terminos.append(a + "|a")
             if rb.search(tt):
                 uso_pares[a][n["medio"]]["b"] += 1
+                terminos.append(a + "|b")
+        indice.append({"m": n["medio"], "t": n["titulo"], "e": n["enlace"], "f": n["fecha"],
+                       "p": paises_n, "s": sc, "w": terminos})
 
     agenda_out = {m: {p: round(100 * agenda[m][p] / por_medio[m], 1) for p in PAISES} for m in medios}
     tono_out = {m: {p: {"media": round(sum(v) / len(v), 2), "n": len(v)}
@@ -184,6 +201,7 @@ def main():
         "tono": tono_out,
         "pares": pares_out,
         "historias": historias[:60],
+        "titulares": sorted(indice, key=lambda x: -x["f"]),
     }
     with open(SALIDA, "w", encoding="utf-8") as f:
         json.dump(resultado, f, ensure_ascii=False)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Recolecta titulares de distintos medios en español a través de sus RSS.
+Recolecta titulares de 28 medios en español de América, Europa, Medio Oriente y Asia a través de sus RSS.
 
 Los RSS son listados que los medios publican para que otros programas los lean, así que no hace falta
 entrar a sus sitios. Para los medios sin RSS propio se usa el RSS de Google News filtrado por sitio
@@ -45,6 +45,18 @@ MEDIOS = [
     ("Xinhua", "China", "Estatal", google("spanish.news.cn")),
     ("CGTN", "China", "Estatal", google("espanol.cgtn.com")),
     ("TeleSUR", "Venezuela", "Estatal", google("telesurtv.net")),
+    ("Prensa Latina", "Cuba", "Estatal", ["https://www.prensa-latina.cu/feed/", google("prensa-latina.cu")]),
+    ("Sputnik Mundo", "Rusia", "Estatal", ["https://noticiaslatam.lat/export/rss2/archive/index.xml", google("noticiaslatam.lat")]),
+    ("Anadolu", "Turquía", "Estatal", ["https://www.aa.com.tr/es/rss/default?cat=guncel", google("aa.com.tr/es")]),
+    ("TRT Español", "Turquía", "Público", google("trtespanol.com")),
+    ("HispanTV", "Irán", "Estatal", google("hispantv.com")),
+    ("Pars Today", "Irán", "Estatal", google("parstoday.ir/es")),
+    ("Al Mayadeen", "Líbano", "Privado", google("espanol.almayadeen.net")),
+    ("Aurora", "Israel", "Privado", google("aurora-israel.co.il")),
+    ("Pueblo en Línea", "China", "Estatal", google("spanish.peopledaily.com.cn")),
+    ("NHK World", "Japón", "Público", google("www3.nhk.or.jp/nhkworld/es")),
+    ("Yonhap", "Corea del Sur", "Agencia", google("sp.yna.co.kr")),
+    ("KBS World", "Corea del Sur", "Público", google("world.kbs.co.kr")),
 ]
 
 
