@@ -1,4 +1,10 @@
-# Scaner: radiografía de la web
+# Scaner
+
+**→ [Ver la comparación de titulares (se actualiza cada 3 horas)](https://cmitjans.github.io/Scaner/noticias/)**
+
+Dos experimentos: una radiografía de la web pública y un comparador de cómo cuentan las noticias 63 medios en seis idiomas (carpeta `noticias/`).
+
+## Radiografía de la web
 
 Toma una muestra aleatoria de páginas de la web pública y la resume: idiomas, países, tipos de sitio y rastreadores.
 
