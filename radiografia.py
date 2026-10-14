@@ -62,7 +62,8 @@ RASTREADORES = {
 # prefiere ocultar de más que mostrar algo explícito.
 ADULTO = re.compile(
     r"porn|xxx|xvideo|sexcam|webcam ?girl|escort|hentai|nsfw|onlyfans|camgirl|milf|erotic|erótic|"
-    r"sexo|sexy|sex |nude|naked|desnud|putas?\b|puta |follando|cogiendo|"
+    r"sexo|sexy|sex |sextoy|sex-toy|sex toy|sextreff|nude|naked|desnud|putas?\b|puta |follando|cogiendo|"
+    r"hotwife|cuckold|swinger|bdsm|fetish|fetich|dildo|vibrador|chaturbate|stripchat|hookup|"
     r"порн|секс|эроти|интим|"
     r"色情|成人|黄色|a片|av女|无码|無碼|中出|自拍|乱伦|性爱|做爱|约炮|裸|"
     r"アダルト|エロ|無修正|セックス|"
