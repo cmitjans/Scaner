@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mismo hecho, otros titulares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Instrument+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: newsroom comparison sheet — shared stories first (headlines side by side), then agenda and tone grids, then word choice */
+:root{
+  --bg:#fcfcfb; --card:#ffffff; --ink:#0b0b0b; --muted:#52514e; --line:#e2e1dc; --soft:#f0efec;
+  --seq:#2a78d6; --pos:#2a78d6; --neg:#e34948; --mid:#f0efec; --mark:#fff2b8; --mark-ink:#0b0b0b;
+  --display:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1a1a19; --card:#222221; --ink:#f0efec; --muted:#c3c2b7; --line:#383835; --soft:#2c2c2a;
+  --seq:#3987e5; --pos:#3987e5; --neg:#e66767; --mid:#383835; --mark:#5a4a12; --mark-ink:#f0efec; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1a19; --card:#222221; --ink:#f0efec; --muted:#c3c2b7; --line:#383835; --soft:#2c2c2a;
+  --seq:#3987e5; --pos:#3987e5; --neg:#e66767; --mid:#383835; --mark:#5a4a12; --mark-ink:#f0efec; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding-inline:16px;padding-block:28px 56px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+h1{font-family:var(--display);font-size:clamp(30px,6.5vw,48px);line-height:1.04;font-weight:700;margin:0 0 12px;text-wrap:balance}
+.lede{color:var(--muted);max-width:66ch;margin:0 0 10px}
+.warn{font-size:13px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px;margin:0 0 30px;max-width:70ch}
+h2{font-family:var(--display);font-size:24px;line-height:1.15;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:0 0 14px;max-width:68ch}
+section{margin-bottom:40px}
+.story{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.story header{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.story header b{font-size:13px;font-family:var(--mono);font-weight:500}
+.story header span{font-size:13px;color:var(--muted)}
+.hl{display:grid;grid-template-columns:150px minmax(0,1fr) 46px;gap:12px;padding:10px 16px;border-top:1px solid var(--line);align-items:baseline}
+.hl:first-of-type{border-top:0}
+@media (max-width:560px){.hl{grid-template-columns:minmax(0,1fr) 40px}.hl .who{grid-column:1/-1}}
+.who{font-size:13px;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600;display:block}
+.hl .t{font-family:var(--display);font-size:17px;line-height:1.3;font-weight:500;min-width:0;word-break:break-word}
+.hl .t mark{background:var(--mark);color:var(--mark-ink);padding:0 2px;border-radius:2px}
+.tone{font-family:var(--mono);font-size:12px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.more{font:inherit;font-size:14px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.more:focus-visible{outline:2px solid var(--seq);outline-offset:2px}
+.grid-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:separate;border-spacing:2px;font-size:13px;min-width:100%}
+th{font-weight:600;text-align:left;padding:6px 8px;white-space:nowrap;color:var(--muted);font-size:12px}
+th.c{text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);height:96px;vertical-align:bottom;padding:6px 4px}
+td.m{white-space:nowrap;padding:4px 8px;font-weight:600}
+td.m small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+td.v{min-width:40px;height:30px;text-align:center;font-family:var(--mono);font-size:12px;border-radius:4px;font-variant-numeric:tabular-nums}
+td.v.e{color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted);margin-top:10px}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.pairs{display:grid;gap:10px}
+.pair{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.pair h3{font-size:15px;margin:0 0 8px}
+.pair h3 em{font-style:normal;color:var(--neg)}
+.pair h3 i{font-style:normal;color:var(--pos)}
+.prow{display:grid;grid-template-columns:130px 1fr;gap:10px;font-size:13px;align-items:center;padding:3px 0}
+.pbar{display:flex;height:10px;gap:2px}
+.pbar span{display:block;height:100%;border-radius:3px}
+.pnum{font-family:var(--mono);font-size:12px;color:var(--muted)}
+td.v.clic,.prow.clic{cursor:pointer}
+td.v.clic:hover,td.v.clic:focus-visible{outline:2px solid var(--ink);outline-offset:-1px}
+td.v.sel{outline:2px solid var(--ink);outline-offset:-1px}
+tr.reg td{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 8px 2px}
+.prow.clic:hover span:first-child{text-decoration:underline}
+.filtro{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--soft);border:1px solid var(--line)}
+.lista{background:var(--card);border:1px solid var(--line);border-radius:12px}
+
+.lista .t a{color:inherit;text-decoration:none}
+.lista .t a:hover{text-decoration:underline}
+.vacio{padding:16px;color:var(--muted);font-size:14px}
+.back{font:inherit;font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.method{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;max-width:72ch}
+.method p{margin:0 0 8px}
+.orig{font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--muted);margin-top:3px;font-weight:400}
+.lg{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:4px;color:var(--muted);vertical-align:1px}
+.who b .lg{font-weight:400}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tabs button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--seq);outline-offset:2px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker" id="kick"></p>
+  <h1>Mismo hecho, otros titulares</h1>
+  <p class="lede" id="lede"></p>
+  <p class="warn" id="warn"></p>
+
+  <section>
+    <h2>La misma noticia, contada por varios medios</h2>
+    <p class="sub">Titulares agrupados automáticamente porque hablan del mismo hecho; primero las noticias que cruzan más idiomas. Los titulares en otros idiomas aparecen traducidos, con el original debajo. Las palabras con carga positiva o negativa están marcadas; el número de la derecha es su balance (positivas menos negativas).</p>
+    <div id="stories"></div>
+    <button class="more" id="moreBtn" type="button">Ver más noticias</button>
+  </section>
+
+  <section>
+    <h2>Cada idioma, su propia agenda</h2>
+    <p class="sub">Porcentaje de titulares que mencionan a cada país, promediando los medios de cada idioma (cada medio pesa lo mismo). Es la comparación más confiable entre idiomas: los nombres de países sobreviven bien a la traducción.</p>
+    <div class="grid-wrap"><table id="tAgL"></table></div>
+    <h3 style="font-size:15px;margin:18px 0 6px">Tono por idioma</h3>
+    <div class="grid-wrap"><table id="tToL"></table></div>
+    <p class="note sub" style="margin-top:8px">El tono de los idiomas traducidos se mide sobre la traducción, así que es más ruidoso, sobre todo en chino y árabe. Mínimo 5 titulares por celda.</p>
+  </section>
+
+  <section>
+    <h2>Un mismo medio, distintos idiomas</h2>
+    <p class="sub">Varios medios publican en más de un idioma. ¿Cuentan lo mismo a cada audiencia? Agenda de cada edición, en % de sus titulares.</p>
+    <div class="grid-wrap"><table id="tFam"></table></div>
+  </section>
+
+  <section>
+    <h2>Agenda: de qué países habla cada medio</h2>
+    <p class="sub">Porcentaje de los titulares de cada medio que mencionan a cada país o a sus líderes. Lo que un medio no cubre también es una forma de sesgo.</p>
+    <div class="tabs" id="tabsA" role="group" aria-label="Filtrar medios por idioma"></div>
+    <div class="grid-wrap"><table id="tAgenda"></table></div>
+    <div class="legend"><span><span class="sw" style="background:color-mix(in oklab,var(--seq) 15%,var(--card))"></span>poco</span><span><span class="sw" style="background:var(--seq)"></span>mucho</span><span>· vacío = nunca lo menciona</span></div>
+  </section>
+
+  <section>
+    <h2>Tono hacia cada país</h2>
+    <p class="sub">Balance promedio de palabras positivas y negativas en los titulares de cada medio que mencionan a un país. Solo se muestra con al menos 3 titulares. Mide el tono de las noticias, no necesariamente la postura del medio: una guerra produce titulares negativos en cualquier medio.</p>
+    <div class="tabs" id="tabsT" role="group" aria-label="Filtrar medios por idioma"></div>
+    <div class="grid-wrap"><table id="tTono"></table></div>
+    <div class="legend"><span><span class="sw" style="background:var(--neg)"></span>más negativo</span><span><span class="sw" style="background:var(--mid);border:1px solid var(--line)"></span>neutro</span><span><span class="sw" style="background:var(--pos)"></span>más positivo</span></div>
+  </section>
+
+  <section>
+    <h2>Elección de palabras</h2>
+    <p class="sub">Cuántas veces cada medio usó un término con más carga frente a uno más neutro para cosas parecidas. Con pocos días de datos aparecen pocos casos; esto se vuelve más revelador con el tiempo.</p>
+    <div class="pairs" id="pairs"></div>
+  </section>
+
+  <section id="explorador">
+    <h2>Los titulares detrás de cada dato</h2>
+    <p class="sub">Toca una celda de las tablas o un medio en "Elección de palabras" y aquí aparecen los titulares exactos que producen ese número, del más reciente al más antiguo.</p>
+    <div class="filtro" id="filtro"></div>
+    <div class="lista" id="lista"><p class="vacio">Todavía no elegiste ningún dato.</p></div>
+  </section>
+
+  <div class="method" id="method"></div>
+</div>
+
+<script>
+const D = __DATA__;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const info = Object.fromEntries(D.medios.map(m => [m.medio, m]));
+const LANGN = {es:'Español', en:'Inglés', fr:'Francés', ru:'Ruso', zh:'Chino', ar:'Árabe'};
+const LORD = ['es','en','fr','ru','zh','ar'];
+const LCODE = {es:'es', en:'en', fr:'fr', ru:'ru', zh:'zh-Hans', ar:'ar'};
+const idi = m => (info[m] || {}).idioma || 'es';
+const lgTag = m => idi(m) === 'es' ? '' : '<span class="lg">' + idi(m) + '</span>';
+const orig = (o, m) => o ? '<div class="orig" lang="' + LCODE[idi(m)] + '" dir="auto">' + esc(o) + '</div>' : '';
+const nIdi = D.idiomas.length;
+$('lede').textContent = 'Titulares de ' + D.medios.length + ' medios en ' + nIdi + ' idiomas (' + LORD.filter(l => D.idiomas.some(x => x.idioma === l)).map(l => LANGN[l].toLowerCase()).join(', ') + '), recolectados de sus RSS. Los que no están en español se traducen automáticamente, sin enviarlos a ningún servicio externo, y se muestran junto al original. La idea: poner lado a lado cómo cuenta cada uno lo mismo, y medir qué países cubre y con qué tono. Toca cualquier número de las tablas para ver los titulares de donde sale.';
+const fecha = t => new Date(t * 1000).toLocaleDateString('es-CL', {day:'numeric', month:'short'});
+const hora = t => new Date(t * 1000).toLocaleString('es-CL', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
+$('kick').textContent = D.total.toLocaleString('es-CL') + ' titulares · ' + D.medios.length + ' medios · ' + fecha(D.desde) + ' a ' + fecha(D.hasta);
+const horas = Math.round((D.hasta - D.desde) / 3600);
+$('warn').textContent = (horas < 24 * 14
+  ? 'Primeros datos: los medios en español cubren unas ' + Math.round(horas / 24) + ' días y los de otros idiomas se sumaron el 14 de octubre de 2026. Con una o dos semanas de datos las comparaciones serán mucho más sólidas. '
+  : 'Datos de ' + Math.round(horas / 24) + ' días. ') + 'La página se actualiza sola cada 3 horas. Las mediciones se basan solo en palabras de los titulares y son aproximadas.';
+
+// Palabras de tono (mismas listas que noticias/analizar.py) para marcarlas en los titulares
+const NEG = new Set(__NEG__), POS = new Set(__POS__);
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function marcar(t){
+  return esc(t).replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, w => {
+    const n = norm(w);
+    return (NEG.has(n) || POS.has(n)) ? '<mark title="' + (NEG.has(n) ? 'negativa' : 'positiva') + '">' + w + '</mark>' : w;
+  });
+}
+
+let shown = 0;
+function more(){
+  const next = D.historias.slice(shown, shown + 8);
+  $('stories').insertAdjacentHTML('beforeend', next.map(h =>
+    '<article class="story"><header><b>' + h.medios + ' medios · ' + h.idiomas + (h.idiomas === 1 ? ' idioma' : ' idiomas') + '</b><span>' + hora(h.fecha) + '</span><span>' + esc(h.clave.join(' · ')) + '</span></header>' +
+    h.titulares.map(t => {
+      const m = info[t.medio] || {};
+      return '<div class="hl"><div class="who"><b>' + esc(t.medio) + lgTag(t.medio) + '</b>' + esc(m.pais || '') + ' · ' + esc(m.tipo || '') + '</div>' +
+        '<div class="t">' + marcar(t.titulo) + orig(t.original, t.medio) + '</div><div class="tone">' + (t.tono > 0 ? '+' : '') + t.tono + '</div></div>';
+    }).join('') + '</article>').join(''));
+  shown += next.length;
+  $('moreBtn').hidden = shown >= D.historias.length;
+}
+$('moreBtn').onclick = more;
+if (D.historias.length) more(); else $('stories').innerHTML = '<p class="sub">Todavía no hay noticias cubiertas por 3 o más medios.</p>';
+
+// Orden de medios: por país de origen
+const ORDEN_P = ['Chile','Argentina','Venezuela','Cuba','España','EE. UU.','Reino Unido','Alemania','Francia','Rusia','Letonia (exilio ruso)','Turquía','Irán','Líbano','Israel','Catar','Arabia Saudita','Emiratos Árabes','Pakistán','India','China','Taiwán','Singapur','Japón','Corea del Sur'];
+const op = p => { const i = ORDEN_P.indexOf(p); return i < 0 ? 99 : i; };
+const medios = D.medios.slice().sort((a, b) => LORD.indexOf(a.idioma || 'es') - LORD.indexOf(b.idioma || 'es') || op(a.pais) - op(b.pais) || a.medio.localeCompare(b.medio));
+
+// filas: [{key, label, sub, data}], grupo(fila) → título de sección
+function tabla(el, filas, grupo, cell){
+  const head = '<tr><th></th>' + D.paises.map(p => '<th class="c">' + esc(p) + '</th>').join('') + '</tr>';
+  let last = '', rows = '';
+  for (const f of filas){
+    const g = grupo ? grupo(f) : '';
+    if (g && g !== last){ rows += '<tr class="reg"><td colspan="' + (D.paises.length + 1) + '">' + esc(g) + '</td></tr>'; last = g; }
+    rows += '<tr><td class="m">' + esc(f.label) + '<small>' + esc(f.sub) + '</small></td>' + D.paises.map(p => cell(f, p)).join('') + '</tr>';
+  }
+  el.innerHTML = head + rows;
+}
+function celdaAgenda(max){
+  return (f, p) => {
+    const v = f.ag[p] || 0;
+    if (!v) return '<td class="v e" title="' + esc(f.label + ' · ' + p + ': 0 %') + '"></td>';
+    const k = Math.round(12 + 88 * Math.sqrt(Math.min(1, v / max)));
+    return '<td class="v clic" tabindex="0" ' + f.attr + ' data-p="' + esc(p) + '" title="' + esc(f.label + ' · ' + p + ': ' + v + ' % de los titulares') + '" style="background:color-mix(in oklab,var(--seq) ' + k + '%,var(--card));color:' + (k > 55 ? '#fff' : 'var(--ink)') + '">' + (v < 1 ? '<1' : Math.round(v)) + '</td>';
+  };
+}
+function celdaTono(f, p){
+  const t = (f.to || {})[p];
+  if (!t) return '<td class="v e"></td>';
+  const x = Math.max(-1.5, Math.min(1.5, t.media)) / 1.5;
+  const col = x < 0 ? 'var(--neg)' : 'var(--pos)';
+  const k = Math.round(Math.abs(x) * 85);
+  return '<td class="v clic" tabindex="0" ' + f.attr + ' data-p="' + esc(p) + '" title="' + esc(f.label + ' · ' + p + ': ' + t.media + ' (' + t.n + ' titulares)') + '" style="background:color-mix(in oklab,' + col + ' ' + k + '%,var(--mid));color:' + (k > 55 ? '#fff' : 'var(--ink)') + '">' + (t.media > 0 ? '+' : '') + t.media.toFixed(1) + '</td>';
+}
+const filaMedio = m => ({label: m.medio, sub: m.pais + ' · ' + m.titulares + ' titulares', ag: D.agenda[m.medio], to: D.tono[m.medio], attr: 'data-m="' + esc(m.medio) + '"', m});
+const maxAg = Math.max(...medios.flatMap(m => D.paises.map(p => D.agenda[m.medio][p] || 0)));
+
+// Por idioma
+const filasL = LORD.map(l => D.idiomas.find(x => x.idioma === l)).filter(Boolean).map(x => ({label: LANGN[x.idioma], sub: x.medios + ' medios · ' + x.titulares + ' titulares', ag: D.agenda_idioma[x.idioma], to: D.tono_idioma[x.idioma], attr: 'data-l="' + x.idioma + '"'}));
+const maxL = Math.max(...filasL.flatMap(f => D.paises.map(p => f.ag[p] || 0)));
+tabla($('tAgL'), filasL, null, celdaAgenda(maxL));
+tabla($('tToL'), filasL, null, celdaTono);
+
+// Familias: ediciones del mismo medio
+const fams = {};
+for (const m of medios) if (m.familia) (fams[m.familia] = fams[m.familia] || []).push(m);
+const filasF = Object.keys(fams).filter(k => fams[k].length > 1).sort().flatMap(k => fams[k].map(m => ({...filaMedio(m), sub: LANGN[m.idioma || 'es'] + ' · ' + m.titulares + ' titulares', fam: k})));
+tabla($('tFam'), filasF, f => f.fam, celdaAgenda(maxAg));
+
+// Por medio, con filtro de idioma
+let filtroL = '';
+function tablasMedios(){
+  const filas = medios.filter(m => !filtroL || (m.idioma || 'es') === filtroL).map(filaMedio);
+  const g = f => LANGN[f.m.idioma || 'es'];
+  tabla($('tAgenda'), filas, g, celdaAgenda(maxAg));
+  tabla($('tTono'), filas, g, celdaTono);
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === filtroL)));
+}
+const tabsHtml = '<button type="button" data-l="">Todos</button>' + filasL.map(f => '<button type="button" data-l="' + f.attr.slice(8, -1) + '">' + esc(f.label) + '</button>').join('');
+['tabsA','tabsT'].forEach(id => { $(id).innerHTML = tabsHtml; $(id).onclick = e => { const b = e.target.closest('button'); if (b){ filtroL = b.dataset.l; tablasMedios(); } }; });
+tablasMedios();
+
+$('pairs').innerHTML = D.pares.map(p => {
+  const ms = Object.entries(p.medios).filter(([, v]) => (v.a || 0) + (v.b || 0) > 0);
+  if (!ms.length) return '<div class="pair"><h3><em>' + esc(p.a) + '</em> o <i>' + esc(p.b) + '</i></h3><p class="pnum">Ningún medio usó estos términos en sus titulares todavía.</p></div>';
+  const max = Math.max(...ms.map(([, v]) => (v.a || 0) + (v.b || 0)));
+  return '<div class="pair"><h3><em>' + esc(p.a) + '</em> o <i>' + esc(p.b) + '</i></h3>' + ms.sort((x, y) => ((y[1].a||0)+(y[1].b||0)) - ((x[1].a||0)+(x[1].b||0))).map(([m, v]) =>
+    '<div class="prow clic" tabindex="0" data-m="' + esc(m) + '" data-w="' + esc(p.a) + '" title="Ver estos titulares"><span>' + esc(m) + '</span><span style="display:flex;gap:8px;align-items:center"><span class="pbar" style="width:' + Math.max(8, 100 * ((v.a||0)+(v.b||0)) / max) + '%">' +
+    (v.a ? '<span style="flex:' + v.a + ';background:var(--neg)" title="' + esc(p.a) + ': ' + v.a + '"></span>' : '') +
+    (v.b ? '<span style="flex:' + v.b + ';background:var(--pos)" title="' + esc(p.b) + ': ' + v.b + '"></span>' : '') +
+    '</span><span class="pnum">' + (v.a || 0) + ' / ' + (v.b || 0) + '</span></span></div>').join('') + '</div>';
+}).join('');
+
+// --- Explorador: de cada dato a sus titulares ---
+let volverA = null;
+function explorar(f, origen){
+  document.querySelectorAll('td.sel').forEach(x => x.classList.remove('sel'));
+  if (origen && origen.tagName === 'TD') origen.classList.add('sel');
+  volverA = origen;
+  const lista = D.titulares.filter(x => (!f.m || x.m === f.m) && (!f.l || idi(x.m) === f.l) && (!f.p || x.p.includes(f.p)) && (!f.w || x.w.some(w => w.startsWith(f.w + '|'))));
+  const par = f.w ? D.pares.find(p => p.a === f.w) : null;
+  $('filtro').innerHTML = (f.m ? '<span class="chip">' + esc(f.m) + '</span>' : '') + (f.l ? '<span class="chip">Medios en ' + esc(LANGN[f.l].toLowerCase()) + '</span>' : '') + (f.p ? '<span class="chip">' + esc(f.p) + '</span>' : '') +
+    (par ? '<span class="chip">' + esc(par.a) + ' / ' + esc(par.b) + '</span>' : '') +
+    '<span class="pnum">' + lista.length + (lista.length === 1 ? ' titular' : ' titulares') + '</span>' +
+    (origen ? '<button class="back" id="volver" type="button">↑ Volver a la tabla</button>' : '');
+  if ($('volver')) $('volver').onclick = () => volverA && volverA.scrollIntoView({behavior:'smooth', block:'center'});
+  $('lista').innerHTML = lista.length ? lista.slice(0, 150).map(x => {
+    const mm = info[x.m] || {};
+    return '<div class="hl"><div class="who"><b>' + esc(hora(x.f)) + '</b>' + (f.m ? esc(mm.pais || '') : esc(x.m) + lgTag(x.m)) + '</div>' +
+      '<div class="t">' + (x.e ? '<a href="' + esc(x.e) + '" target="_blank" rel="noopener noreferrer">' + marcar(x.t) + '</a>' : marcar(x.t)) + orig(x.o, x.m) + '</div>' +
+      '<div class="tone">' + (x.s > 0 ? '+' : '') + x.s + '</div></div>';
+  }).join('') : '<p class="vacio">No hay titulares con ese filtro.</p>';
+  $('explorador').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function activar(el){
+  const td = el.closest('[data-m],[data-l]');
+  if (!td) return;
+  explorar({m: td.dataset.m, l: td.dataset.l, p: td.dataset.p, w: td.dataset.w}, td);
+}
+['tAgL','tToL','tFam','tAgenda','tTono','pairs'].forEach(id => {
+  $(id).addEventListener('click', e => activar(e.target));
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activar(e.target); } });
+});
+
+$('method').innerHTML = '<p><b>Cómo se hizo.</b> Los titulares vienen de los RSS de cada medio; para los que no tienen uno propio se usa el RSS de Google News filtrado por sitio, que trae solo el titular. La Voz de América, Pars Today y Pueblo en Línea casi no aparecen en Google News, así que están subrepresentados.</p>' +
+  '<p><b>Traducción.</b> Los medios en otros idiomas se eligieron por su peso en ese idioma, no por tener edición en español. Sus titulares se traducen en el mismo servidor con Argos Translate, un traductor de código abierto que no envía el texto a ningún servicio. No hay modelos directos al español, así que pasa por el inglés (ruso → inglés → español): la traducción del inglés y el ruso es buena, la del francés aceptable, y la del chino y el árabe a veces se equivoca bastante. Por eso el original siempre aparece debajo, y la agenda (qué países se nombran) es la comparación más confiable entre idiomas; el tono y los pares de palabras dependen de las palabras que elige el traductor.</p>' +
+  '<p>Las listas de países, palabras de tono y pares de términos se definieron antes de mirar los datos y están en <code>noticias/analizar.py</code> del repositorio Scaner. El tono cuenta palabras sueltas: no entiende ironía, negaciones ni contexto. Una diferencia pequeña o con pocos titulares no significa nada; lo valioso son los patrones que se mantienen con el tiempo.</p>';
+</script>
+</body>
+</html>
