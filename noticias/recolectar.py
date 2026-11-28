@@ -6,7 +6,7 @@ Los RSS son listados que los medios publican para que otros programas los lean, 
 entrar a sus sitios. Para los medios sin RSS propio se usa el RSS de Google News filtrado por sitio
 (trae solo titulares). Los titulares en otros idiomas se traducen después con traducir.py. No se guardan artículos completos: solo título, un resumen corto, fecha y enlace.
 
-Uso: python3 recolectar.py   → agrega las noticias nuevas a datos/noticias.jsonl
+Uso: python3 recolectar.py   → agrega las noticias nuevas a datos/noticias/AAAA-MM.jsonl (un archivo por mes)
 """
 import calendar
 import html
@@ -18,8 +18,9 @@ import urllib.request
 
 import feedparser
 
+import almacen
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ARCHIVO = os.path.join(AQUI, "datos", "noticias.jsonl")
 AGENTE = "Mozilla/5.0 (compatible; comparador-de-titulares/1.0; github.com/cmitjans/Scaner)"
 
 
@@ -154,15 +155,14 @@ def leer(medio, url):
 
 
 def main():
-    os.makedirs(os.path.dirname(ARCHIVO), exist_ok=True)
+    os.makedirs(almacen.CARPETA, exist_ok=True)
+    # Para no repetir: lo ya guardado en los últimos dos meses (los RSS solo traen notas de la última semana)
     vistos = set()
-    if os.path.exists(ARCHIVO):
-        with open(ARCHIVO, encoding="utf-8") as f:
-            for linea in f:
-                n = json.loads(linea)
-                vistos.add((n["medio"], n["titulo"].lower()))
+    for n in almacen.leer(desde=time.time() - 40 * 86400):
+        vistos.add((n["medio"], n["titulo"].lower()))
+    abiertos = {}
     nuevas = 0
-    with open(ARCHIVO, "a", encoding="utf-8") as f:
+    try:
         for medio, pais, tipo, idioma, urls in MEDIOS:
             items = None
             for url in (urls if isinstance(urls, list) else [urls]):
@@ -182,10 +182,16 @@ def main():
                 it.update({"pais": pais, "tipo": tipo, "idioma": idioma})
                 if medio in FAMILIA_DE:
                     it["familia"] = FAMILIA_DE[medio]
-                f.write(json.dumps(it, ensure_ascii=False) + "\n")
+                ruta = almacen.ruta_mes(it["fecha"])
+                if ruta not in abiertos:
+                    abiertos[ruta] = open(ruta, "a", encoding="utf-8")
+                abiertos[ruta].write(json.dumps(it, ensure_ascii=False) + "\n")
                 n += 1
             nuevas += n
             print(f"  {medio}: {n} nuevas de {len(items)}")
+    finally:
+        for f in abiertos.values():
+            f.close()
     print(f"Total nuevas: {nuevas}")
 
 

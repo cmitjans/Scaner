@@ -14,19 +14,24 @@ nombran) es la más confiable, porque los nombres de países se traducen bien.
 Además de por medio, todo se resume por idioma y por "familia" (un mismo medio en varios idiomas).
 
 Todo es aproximado: se basa en palabras de los titulares, no en leer los artículos.
+Se analizan los últimos VENTANA_DIAS días; la lista de titulares para el explorador de la página
+cubre solo los últimos INDICE_DIAS, para que la página no pese demasiado en el teléfono.
 Uso: python3 analizar.py   → escribe datos/analisis.json
 """
 import json
 import math
 import os
 import re
+import time
 import unicodedata
 from collections import Counter, defaultdict
 
+import almacen
 from recolectar import FAMILIA_DE
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ENTRADA = os.path.join(AQUI, "datos", "noticias.jsonl")
+VENTANA_DIAS = 30
+INDICE_DIAS = 7
 SALIDA = os.path.join(AQUI, "datos", "analisis.json")
 
 
@@ -141,16 +146,18 @@ def agrupar(noticias, umbral=0.32, ventana=3 * 86400):
 
 def main():
     noticias = []
-    with open(ENTRADA, encoding="utf-8") as f:
-        for linea in f:
-            n = json.loads(linea)
-            n.setdefault("idioma", "es")
-            if n["idioma"] != "es":
-                if "titulo_es" not in n:
-                    continue  # todavía sin traducir
-                n["original"], n["titulo"] = n["titulo"], n["titulo_es"]
-                n["resumen"] = ""  # los resúmenes no se traducen
-            noticias.append(n)
+    ahora = time.time()
+    desde = ahora - VENTANA_DIAS * 86400
+    for n in almacen.leer(desde=desde):
+        if n["fecha"] < desde:
+            continue
+        n.setdefault("idioma", "es")
+        if n["idioma"] != "es":
+            if "titulo_es" not in n:
+                continue  # todavía sin traducir
+            n["original"], n["titulo"] = n["titulo"], n["titulo_es"]
+            n["resumen"] = ""  # los resúmenes no se traducen
+        noticias.append(n)
     medios = sorted({n["medio"] for n in noticias})
     info = {n["medio"]: {"pais": n["pais"], "tipo": n["tipo"], "idioma": n["idioma"],
                          **({"familia": FAMILIA_DE[n["medio"]]} if n["medio"] in FAMILIA_DE else {})}
@@ -241,7 +248,9 @@ def main():
         "tono": tono_out,
         "pares": pares_out,
         "historias": historias[:80],
-        "titulares": sorted(indice, key=lambda x: -x["f"]),
+        "titulares": sorted((x for x in indice if x["f"] >= ahora - INDICE_DIAS * 86400), key=lambda x: -x["f"]),
+        "ventana_dias": VENTANA_DIAS,
+        "indice_dias": INDICE_DIAS,
     }
     with open(SALIDA, "w", encoding="utf-8") as f:
         json.dump(resultado, f, ensure_ascii=False)

@@ -7,15 +7,16 @@ Argos no tiene modelos directos de ruso, chino, árabe o francés al español, a
 por el inglés (ruso → inglés → español). Eso agrega errores, sobre todo en chino y árabe: la traducción sirve para entender y
 comparar, pero el titular original siempre se guarda y se muestra al lado.
 
-Uso: python3 traducir.py   → agrega "titulo_es" a los titulares de datos/noticias.jsonl que no lo tengan
+Uso: python3 traducir.py   → agrega "titulo_es" a los titulares de datos/noticias/*.jsonl que no lo tengan
 """
 import json
 import os
 import re
 import time
 
+import almacen
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ARCHIVO = os.path.join(AQUI, "datos", "noticias.jsonl")
 IDIOMAS = ["en", "fr", "ru", "zh", "ar"]
 MAXIMO = 4000  # tope por ejecución; lo que falte se traduce en la siguiente
 
@@ -68,26 +69,34 @@ def oracion(texto):
 
 
 def main():
-    with open(ARCHIVO, encoding="utf-8") as f:
-        noticias = [json.loads(l) for l in f]
-    pendientes = [n for n in noticias if n.get("idioma", "es") != "es" and "titulo_es" not in n]
-    print(f"{len(pendientes)} titulares por traducir")
-    if not pendientes:
+    falta = lambda n: n.get("idioma", "es") != "es" and "titulo_es" not in n
+    por_archivo = {}
+    total = 0
+    for ruta in almacen.archivos():
+        noticias = almacen.leer_archivo(ruta)
+        pend = [n for n in noticias if falta(n)]
+        if pend:
+            por_archivo[ruta] = (noticias, pend)
+            total += len(pend)
+    print(f"{total} titulares por traducir")
+    if not total:
         return
     traducir = preparar()
     t0, hechos = time.time(), 0
-    for n in pendientes[:MAXIMO]:
-        try:
-            n["titulo_es"] = traducir(n["titulo"], n["idioma"])
-            hechos += 1
-        except Exception as e:
-            print(f"  no se pudo traducir ({e.__class__.__name__}): {n['titulo'][:60]}")
+    for ruta, (noticias, pend) in por_archivo.items():
+        cambio = False
+        for n in pend:
+            if hechos >= MAXIMO:
+                break
+            try:
+                n["titulo_es"] = traducir(n["titulo"], n["idioma"])
+                hechos += 1
+                cambio = True
+            except Exception as e:
+                print(f"  no se pudo traducir ({e.__class__.__name__}): {n['titulo'][:60]}")
+        if cambio:
+            almacen.reescribir(ruta, noticias)
     print(f"{hechos} traducidos en {time.time() - t0:.0f} s")
-    tmp = ARCHIVO + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        for n in noticias:
-            f.write(json.dumps(n, ensure_ascii=False) + "\n")
-    os.replace(tmp, ARCHIVO)
 
 
 if __name__ == "__main__":
