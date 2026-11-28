@@ -1,8 +1,9 @@
 """
-Dónde se guardan los titulares: un archivo por mes en datos/noticias/AAAA-MM.jsonl.
+Dónde se guardan los titulares: dos archivos por mes, datos/noticias/AAAA-MM-a.jsonl (días 1 a 15)
+y AAAA-MM-b.jsonl (16 en adelante).
 
 Antes era un solo archivo, pero creció hasta pasar el límite de 100 MB por archivo de GitHub.
-Separado por mes, cada archivo queda bastante por debajo de ese límite.
+Separado por quincena, cada archivo queda en unos 30 MB, bajo los 50 MB que GitHub recomienda.
 """
 import json
 import os
@@ -13,7 +14,8 @@ CARPETA = os.path.join(AQUI, "datos", "noticias")
 
 
 def ruta_mes(fecha):
-    return os.path.join(CARPETA, time.strftime("%Y-%m", time.gmtime(fecha)) + ".jsonl")
+    t = time.gmtime(fecha)
+    return os.path.join(CARPETA, time.strftime("%Y-%m", t) + ("-a" if t.tm_mday <= 15 else "-b") + ".jsonl")
 
 
 def archivos():

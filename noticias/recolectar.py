@@ -6,7 +6,7 @@ Los RSS son listados que los medios publican para que otros programas los lean, 
 entrar a sus sitios. Para los medios sin RSS propio se usa el RSS de Google News filtrado por sitio
 (trae solo titulares). Los titulares en otros idiomas se traducen después con traducir.py. No se guardan artículos completos: solo título, un resumen corto, fecha y enlace.
 
-Uso: python3 recolectar.py   → agrega las noticias nuevas a datos/noticias/AAAA-MM.jsonl (un archivo por mes)
+Uso: python3 recolectar.py   → agrega las noticias nuevas a datos/noticias/ (dos archivos por mes, ver almacen.py)
 """
 import calendar
 import html
